@@ -2,7 +2,7 @@ import sys, os
 import re
 
 # Only use vendor folder in Lambda (not locally)
-if os.environ.get('AWS_EXECUTION_ENV'):  # This env var only exists in Lambda
+if os.environ.get("AWS_EXECUTION_ENV"):  # This env var only exists in Lambda
     sys.path.insert(0, os.path.join(os.path.dirname(__file__), "vendor"))
 
 import json
@@ -49,34 +49,31 @@ def clean_text_for_llm(text: str) -> str:
     """Clean text to be LLM-friendly by removing unwanted characters and formatting."""
     if not text:
         return ""
-    
+
     # Remove excessive newlines (more than 2 consecutive)
-    text = re.sub(r'\n{3,}', '\n\n', text)
-    
+    text = re.sub(r"\n{3,}", "\n\n", text)
+
     # Replace tabs with spaces
-    text = text.replace('\t', ' ')
-    
+    text = text.replace("\t", " ")
+
     # Remove excessive spaces (more than 2 consecutive)
-    text = re.sub(r' {3,}', ' ', text)
-    
+    text = re.sub(r" {3,}", " ", text)
+
     # Remove common code artifacts and formatting marks
-    text = re.sub(r'```[\s\S]*?```', '', text)  # Remove code blocks
-    text = re.sub(r'`[^`]*`', '', text)  # Remove inline code
-    
-    # Remove URLs that are just noise (keeping them in context is fine, but removing duplicates)
-    # text = re.sub(r'http[s]?://(?:[a-zA-Z]|[0-9]|[$-_@.&+]|[!*\\(\\),]|(?:%[0-9a-fA-F][0-9a-fA-F]))+', '', text)
-    
+    text = re.sub(r"```[\s\S]*?```", "", text)  # Remove code blocks
+    text = re.sub(r"`[^`]*`", "", text)  # Remove inline code
+
     # Remove special characters that don't add meaning
-    text = re.sub(r'[•●○◦▪▫■□‣⁃]', '', text)  # Bullet points
-    text = re.sub(r'[─━│┃┌┐└┘├┤┬┴┼]', '', text)  # Box drawing
-    
+    text = re.sub(r"[•●○◦▪▫■□‣⁃]", "", text)  # Bullet points
+    text = re.sub(r"[─━│┃┌┐└┘├┤┬┴┼]", "", text)  # Box drawing
+
     # Clean up whitespace
-    text = '\n'.join(line.strip() for line in text.split('\n'))
-    text = re.sub(r'\n{2,}', '\n\n', text)  # Max 2 newlines
-    
+    text = "\n".join(line.strip() for line in text.split("\n"))
+    text = re.sub(r"\n{2,}", "\n\n", text)  # Max 2 newlines
+
     # Remove leading/trailing whitespace
     text = text.strip()
-    
+
     return text
 
 
@@ -131,7 +128,7 @@ def fetch_article_streaming(url: str, max_length: int = 7000) -> ArticleResponse
         # Clean the content for LLM consumption
         content = clean_text_for_llm(article.text)
         title = clean_text_for_llm(article.title) if article.title else None
-        
+
         if content and len(content) > max_length:
             content = content[:max_length] + "..."
 
@@ -200,7 +197,11 @@ def lambda_handler(event, context):
                 # Only include pages that successfully extracted content
                 if article.content:
                     pages.append(
-                        Page(url=article.url, title=article.title, content=article.content)
+                        Page(
+                            url=article.url,
+                            title=article.title,
+                            content=article.content,
+                        )
                     )
 
         pages_dict = [page.model_dump() for page in pages]
