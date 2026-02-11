@@ -1,0 +1,37 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: perplexity-clone
+
+# GLOBAL VARIABLES
+Globals:
+  Function:
+    Runtime: nodejs24.x
+    Architectures:
+      - arm64
+    MemorySize: 128
+    LoggingConfig:
+      LogFormat: JSON
+
+Resources:
+  # Main LAMBDA
+  MainLambda:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: ./
+      Handler: src/app.handler
+      Timeout: 10
+      FunctionUrlConfig:
+        AuthType: NONE
+    Metadata:
+      BuildMethod: esbuild
+      BuildProperties:
+        Target: es2020
+        Sourcemap: true
+        EntryPoints:
+          - src/app.ts
+
+
+Outputs:
+  MyFunctionUrlEndpoint:
+    Description: "My Lambda Function URL Endpoint"
+    Value: !GetAtt MainLambdaUrl.FunctionUrl
